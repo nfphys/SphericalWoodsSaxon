@@ -49,3 +49,10 @@ function test_legendre(l, m, legendre_exact)
     @show error
     return 
 end
+
+
+
+function spherical_harmonics(l, m, θ, φ)
+    sqrt((2l+1)/4π * factorial(l-m)/factorial(l+m)) * 
+    legendre(l, m, cos(θ)) * exp(im*m*φ)
+end

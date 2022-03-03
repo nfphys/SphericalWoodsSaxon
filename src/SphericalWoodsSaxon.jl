@@ -31,7 +31,7 @@ export PhysicalParam
     κ = 0.44
     
     # model space
-    Emax = 10 # [MeV]
+    Emax = 5 # [MeV]
     lmax::Int64 = 5
     Λmax::Int64 = 2lmax+1; @assert isodd(Λmax)
 
