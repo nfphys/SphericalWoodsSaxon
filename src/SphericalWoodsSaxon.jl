@@ -9,6 +9,9 @@ using ProgressMeter
 include("./single_particle_states.jl")
 include("./angular_momentum.jl")
 include("./legendre.jl")
+
+include("./three_body_Hamiltonian.jl")
+include("./three_body_density.jl")
 include("./three_body.jl")
 
 export PhysicalParam

@@ -92,7 +92,7 @@ function calc_occ!(spstates, param)
             occ[i] = 1
             n += (j+1)
         elseif n < N
-            occ[i] = (N - n)/2
+            occ[i] = (N - n)/(j+1)
             n = N
         end
     end
