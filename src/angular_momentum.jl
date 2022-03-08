@@ -78,6 +78,20 @@ function calc_angular_matrix_element(l, j, m, λ, μ, lp, jp, mp)
     return M
 end
 
+function calc_reduced_angular_matrix_element(l, j, λ, lp, jp)
+    if isodd(l+lp+λ)
+        return 0.0
+    end
+    
+    M = sqrt((j+1)*(jp+1)*(2λ+1)/4π) * wigner3j(j,2λ,jp,1,0,-1)
+    
+    if isodd(div(j+1,2))
+        M *= -1
+    end
+    
+    return M
+end
+
 
 
 

@@ -79,7 +79,9 @@ function make_three_body_Hamiltonian(param, spstates, J)
             #@show l₁, l₂
         end
     end
-    @show Emax lmax nstates dim 
+    println("")
+    @show Emax, lmax, nstates
+    @show J, dim 
 
     Hmat_3body = zeros(Float64, dim, dim)
 
