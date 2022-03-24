@@ -1,7 +1,7 @@
 
 export test_calc_BE1_strength
 
-function calc_dipole_matrix_element(param, spstates, n₁, n₂, M)
+function calc_dipole_matrix_element(param, spstates, n₁, n₂)
     @unpack Z, A, Nr, rs, Δr = param 
     @unpack nstates, ψs, spEs, qnums = spstates 
 
@@ -29,9 +29,7 @@ end
 
 
 
-function calc_BE1_strength(param, spstates, coeff_gs, coeff_excited, M)  
-    @assert M === 0 || M === 1 || M === -1 
-
+function calc_BE1_strength(param, spstates, coeff_gs, coeff_excited)  
     @unpack Z, A, Nr, rs, Δr, Emax, lmax = param 
     @unpack nstates, ψs, spEs, qnums, occ = spstates 
 
@@ -102,22 +100,22 @@ function calc_BE1_strength(param, spstates, coeff_gs, coeff_excited, M)
 
                     if n₂ === n₄ 
                         ME += temp * (-1)^div(j₁+j₃,2)
-                        calc_dipole_matrix_element(param, spstates, n₁, n₃, M) 
+                        calc_dipole_matrix_element(param, spstates, n₁, n₃) 
                     end
 
                     if n₁ === n₃ 
                         ME += temp * #(-1)^div(j₂+j₄,2) *
-                        calc_dipole_matrix_element(param, spstates, n₂, n₄, M) 
+                        calc_dipole_matrix_element(param, spstates, n₂, n₄) 
                     end
 
                     if n₂ === n₃ 
                         ME += temp * (-1)^div(j₁+j₄,2)
-                        calc_dipole_matrix_element(param, spstates, n₁, n₄, M) 
+                        calc_dipole_matrix_element(param, spstates, n₁, n₄) 
                     end 
 
                     if n₁ === n₄ 
                         ME += temp * #(-1)^div(j₂+j₃,2) * 
-                        calc_dipole_matrix_element(param, spstates, n₂, n₃, M) 
+                        calc_dipole_matrix_element(param, spstates, n₂, n₃) 
                     end
 
                 end
@@ -133,6 +131,8 @@ function calc_BE1_strength(param, spstates, coeff_gs, coeff_excited, M)
 end
 
 function test_calc_BE1_strength(param; howmany=50, Γ=0.2, figname="test")
+    @unpack Emax, lmax = param 
+
     spstates = calc_single_particle_states(param)
     calc_occ!(spstates, param)
 
@@ -144,35 +144,28 @@ function test_calc_BE1_strength(param; howmany=50, Γ=0.2, figname="test")
     E_gs = Es_gs[1]
     coeff_gs = coeffs_gs[:, 1] 
     @show E_gs 
+    
+    J_excited = 1 
+    Hmat_3body = make_three_body_Hamiltonian(param, spstates, J_excited) 
+    @time Es_excited, coeffs_excited = eigen(Hmat_3body)
+    @show Es_excited[1:2]
 
-    Es = range(0, 10.0,  step=0.01) 
-    fs = zeros(Float64, length(Es)) 
-    p = plot(xlabel="E [MeV]", ylabel="B(E1)", title="Γ=$Γ[MeV]", ylim=(0, 1))
-    for M in -1:1
-        J_excited = 1 
-        M_excited = M 
-        Hmat_3body = make_three_body_Hamiltonian(param, spstates, J_excited) 
-        @time Es_excited, coeffs_excited = eigen(Hmat_3body)
-        @show Es_excited[1:2]
-
-        BE1s = zeros(Float64, length(Es_excited))
-        @time for k in 1:length(Es_excited)
-            BE1s[k] = calc_BE1_strength(param, spstates, coeff_gs, coeffs_excited[:,k], M) 
-        end
-        @show BE1s[1:2]
-
-        gs = zeros(Float64, length(Es)) 
-        for k in 1:length(Es_excited) 
-            for iE in 1:length(Es)
-                E = Es[iE] 
-                gs[iE] += (Γ/π) * 1/((E - Es_excited[k] + E_gs)^2 + Γ^2) * BE1s[k]
-            end
-        end
-        plot!(p, Es, gs; label="M=$M")
-        @. fs += gs 
+    BE1s = zeros(Float64, length(Es_excited))
+    @time for k in 1:length(Es_excited)
+        BE1s[k] = calc_BE1_strength(param, spstates, coeff_gs, coeffs_excited[:,k]) 
     end
+    @show BE1s[1:2]
 
-    plot!(p, Es, fs; label="total")β
-    savefig("./Figure/" * figname * ".png")
+    Es = range(0, 5.0,  step=0.01) 
+    fs = zeros(Float64, length(Es)) 
+    for k in 1:length(Es_excited) 
+        for iE in 1:length(Es)
+            E = Es[iE] 
+            fs[iE] += 3 * (Γ/π) * 1/((E - Es_excited[k] + E_gs)^2 + Γ^2) * BE1s[k]
+        end
+    end
+    p = plot(xlabel="E [MeV]", ylabel="B(E1)", title="Emax=$(Emax)[MeV]  lmax=$(lmax)  Γ=$Γ[MeV]", ylim=(0,5))
+    plot!(p, Es, fs; label="total")
+    #savefig("./Figure/" * figname * ".png")
     display(p)
 end

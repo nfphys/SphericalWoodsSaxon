@@ -17,7 +17,7 @@ end
 
 
 function make_single_particle_Hamiltonian(param, qnum)
-    @unpack M, Nr, Δr, rs, V₀, r₀, R₀, a, κ = param
+    @unpack M, Nr, Δr, rs, V₀, V₁, r₀, R₀, a = param
     @unpack l, j = qnum
     
     # potential
@@ -28,11 +28,16 @@ function make_single_particle_Hamiltonian(param, qnum)
     
     # spin-orbit part
     ls = (j*(j+2) - 4l*(l+1) - 3)/8
-    @. Vs += κ*V₀*ls*(r₀*r₀/(a*rs))*exp((rs-R₀)/a)/(1 + exp((rs-R₀)/a))^2
+    @. Vs += V₁*ls*(r₀*r₀/(a*rs))*exp((rs-R₀)/a)/(1 + exp((rs-R₀)/a))^2
+
+    # gaussian potential for s-wave
+    if l === 0
+        μ = 0.09 
+        @. Vs += 4.8*0.963*exp(-μ*rs*rs)
+    end
     
     # centrifugal part
     @. Vs += M*l*(l+1)/rs^2
-    
     
     dv = zeros(Float64, Nr)
     ev = zeros(Float64, Nr-1)

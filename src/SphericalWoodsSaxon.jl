@@ -27,11 +27,12 @@ export PhysicalParam
     A::Int64 = Z + N; @assert A === Z + N
     
     # parameters of Woods-Saxon potential
-    V₀ = -51+33(N-Z)/A # [MeV]
-    r₀ = 1.27 # [fm]
+    V₀ = -38.76*0.963 # [MeV]
+    V₁ = -25.63*0.963
+    r₀ = 1.25 # [fm]
     R₀ = r₀*A^(1/3) # [fm]
-    a = 0.67 # [fm]
-    κ = 0.44
+    a = 0.65 # [fm]
+    #κ = 0.44
     
     # model space
     Emax = 5 # [MeV]
