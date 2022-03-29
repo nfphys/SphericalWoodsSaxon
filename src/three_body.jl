@@ -34,11 +34,9 @@ function calc_BE1_strength(param, spstates, coeff_gs, coeff_excited)
     @unpack nstates, ψs, spEs, qnums, occ = spstates 
 
     J_gs = 0 # actual value 
-    M_gs = 0 # actual value 
     dim_gs = length(coeff_gs) 
 
     J_excited = 1 # actual value 
-    M_excited = 0 # actual value 
     dim_excited = length(coeff_excited) 
 
     ME = 0.0 
@@ -99,7 +97,7 @@ function calc_BE1_strength(param, spstates, coeff_gs, coeff_excited)
                     1/sqrt(3(j₃+1) * (1+(n₁===n₂)) * (1+(n₃===n₄)))
 
                     if n₂ === n₄ 
-                        ME += temp * (-1)^div(j₁+j₃,2)
+                        ME += temp * (-1)^div(j₁+j₃,2) *
                         calc_dipole_matrix_element(param, spstates, n₁, n₃) 
                     end
 
@@ -109,7 +107,7 @@ function calc_BE1_strength(param, spstates, coeff_gs, coeff_excited)
                     end
 
                     if n₂ === n₃ 
-                        ME += temp * (-1)^div(j₁+j₄,2)
+                        ME += temp * (-1)^div(j₁+j₄,2) *
                         calc_dipole_matrix_element(param, spstates, n₁, n₄) 
                     end 
 
@@ -130,7 +128,7 @@ function calc_BE1_strength(param, spstates, coeff_gs, coeff_excited)
     return BE1 
 end
 
-function test_calc_BE1_strength(param; howmany=50, Γ=0.2, figname="test")
+function test_calc_BE1_strength(param; Γ=0.2, figname="test")
     @unpack Emax, lmax = param 
 
     spstates = calc_single_particle_states(param)
@@ -138,7 +136,6 @@ function test_calc_BE1_strength(param; howmany=50, Γ=0.2, figname="test")
 
     # ground states 
     J_gs = 0 
-    M_gs = 0 
     Hmat_3body = make_three_body_Hamiltonian(param, spstates, J_gs) 
     @time Es_gs, coeffs_gs = eigen(Hmat_3body)
     E_gs = Es_gs[1]
