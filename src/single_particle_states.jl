@@ -51,9 +51,6 @@ function normalize!(ys, rs)
     return 
 end
 
-
-
-
 function integrate_SchEq!(ys, As, param, Vs, E, qnum)
     @unpack M, Nr, Δr, rs, R₀, ir_matching = param 
     @unpack l, j = qnum
@@ -225,6 +222,62 @@ function calc_single_particle_states(param)
 end
 
 
+#=
+function make_single_particle_Hamiltonian(param, qnum)
+    @unpack M, Nr, Δr, rs = param
+    @unpack l, j = qnum
+    
+    # potential
+    Vs = zeros(Float64, Nr)
+    calc_single_particle_potential!(Vs, param, qnum)
+    
+    dv = zeros(Float64, Nr)
+    ev = zeros(Float64, Nr-1)
+    
+    @. dv = 2M/Δr^2 + Vs
+    @. ev = -M/Δr^2
+    
+    return SymTridiagonal(dv, ev)
+end
+
+function calc_single_particle_states(param)
+    @unpack Nr, Δr, Emax, lmax = param 
+    
+    ψs = zeros(Float64, Nr, Nr*(lmax+1))
+    spEs = zeros(Float64, Nr*(lmax+1))
+    qnums = Vector{QuantumNumbers}(undef, Nr*(lmax+1))
+    occ = zeros(Float64, Nr*(lmax+1))
+    
+    nstates = 0
+    for l in 0:lmax, j in (2l+1): -2: max(2l-1, 0)
+        qnum = QuantumNumbers(l=l,j=j)
+        
+        Hmat = make_single_particle_Hamiltonian(param, qnum)
+        vals, vecs = eigen(Hmat)
+        #@show dot(vecs[:,1], vecs[:,1])
+        
+        @. vecs /= sqrt(Δr)
+        
+        #@show dot(vecs[:,1], vecs[:,1])*Δr
+        
+        for i in 1:Nr
+            if vals[i] > Emax
+                break
+            end
+            nstates += 1
+            ψs[:,nstates] = vecs[:,i]
+            spEs[nstates] = vals[i]
+            qnums[nstates] = qnum
+        end
+    end
+    
+    p = sortperm(spEs[1:nstates])
+    
+    SingleParticleStates(nstates, ψs[:,p], spEs[p], qnums[p], occ[p])
+end
+=#
+
+
 
 function calc_occ!(spstates, param)
     @unpack N = param
@@ -267,58 +320,3 @@ end
 
 
 
-
-#=
-function make_single_particle_Hamiltonian(param, qnum)
-    @unpack M, Nr, Δr, rs = param
-    @unpack l, j = qnum
-    
-    # potential
-    Vs = zeros(Float64, Nr)
-    calc_single_particle_potential!(Vs, param, qnum)
-    
-    dv = zeros(Float64, Nr)
-    ev = zeros(Float64, Nr-1)
-    
-    @. dv = 2M/Δr^2 + Vs
-    @. ev = -M/Δr^2
-    
-    return SymTridiagonal(dv, ev)
-end
-
-function calc_single_particle_states2(param)
-    @unpack Nr, Δr, Emax, lmax = param 
-    
-    ψs = zeros(Float64, Nr, Nr*(lmax+1))
-    spEs = zeros(Float64, Nr*(lmax+1))
-    qnums = Vector{QuantumNumbers}(undef, Nr*(lmax+1))
-    occ = zeros(Float64, Nr*(lmax+1))
-    
-    nstates = 0
-    for l in 0:lmax, j in (2l+1): -2: max(2l-1, 0)
-        qnum = QuantumNumbers(l=l,j=j)
-        
-        Hmat = make_single_particle_Hamiltonian(param, qnum)
-        vals, vecs = eigen(Hmat)
-        #@show dot(vecs[:,1], vecs[:,1])
-        
-        @. vecs /= sqrt(Δr)
-        
-        #@show dot(vecs[:,1], vecs[:,1])*Δr
-        
-        for i in 1:Nr
-            if vals[i] > Emax
-                break
-            end
-            nstates += 1
-            ψs[:,nstates] = vecs[:,i]
-            spEs[nstates] = vals[i]
-            qnums[nstates] = qnum
-        end
-    end
-    
-    p = sortperm(spEs[1:nstates])
-    
-    SingleParticleStates(nstates, ψs[:,p], spEs[p], qnums[p], occ[p])
-end
-=#
