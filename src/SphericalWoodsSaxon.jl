@@ -19,37 +19,58 @@ export PhysicalParam
 @with_kw struct PhysicalParam{T} @deftype Float64
     ħc = 197.
     mc² = 938.
-    M = ħc^2/2mc²
     
-    # particle number
+    # particle number of core nucleus
     Z::Int64 = 6; @assert iseven(Z) 
     N::Int64 = 14; @assert iseven(N) 
     A::Int64 = Z + N; @assert A === Z + N
-    
-    # parameters of Woods-Saxon potential
-    V₀ = -38.76*0.963 # [MeV]
-    V₁ = -25.63*0.963
-    r₀ = 1.25 # [fm]
-    R₀ = r₀*A^(1/3) # [fm]
-    a = 0.65 # [fm]
-    #κ = 0.44
-    
-    # model space
-    Emax = 5 # [MeV]
-    lmax::Int64 = 5
-    Λmax::Int64 = 2lmax+1; @assert isodd(Λmax)
 
-    # parameters of neutron-neutron interaction 
-    a_nn = -15.0 # [fm]
-    v₀_nn = 2π^2*ħc^2/mc² * 2a_nn/(π - 2a_nn*sqrt(mc²*Emax/ħc^2))
-    v_rho = -v₀_nn 
-    R_rho = r₀*A^(1/3)
-    a_rho = 0.67
-    
+    M = ħc^2/2mc²*(1 + 1/A)
+
     # radial mesh
     Nr::Int64 = 100
     Δr = 0.2
     rs::T = range(Δr, Nr*Δr, length=Nr)
+    
+    # parameters of Woods-Saxon potential
+    #= O-24
+    V₀ = -43.2 # [MeV]
+    V₁ = 0.44*0.73*V₀
+    r₀ = 1.25 # [fm]
+    R₀ = r₀*A^(1/3) # [fm]
+    a = 0.67 # [fm]
+    V_gaus = 0.0
+    μ_gaus = 0.09
+    =#
+
+    # C-22
+    V₀ = -38.76 # [MeV]
+    V₁ = -25.63/1.25^2
+    r₀ = 1.25 # [fm]
+    R₀ = r₀*A^(1/3) # [fm]
+    a = 0.65 # [fm]
+    V_gaus = 4.66
+    μ_gaus = 0.09
+    
+    # model space
+    Emax = 5 # [MeV]
+    lmax::Int64 = 5
+
+    # parameters of neutron-neutron interaction
+    #= O-24 
+    a_nn = -15.0 # [fm]
+    v₀_nn = 2π^2*ħc^2/mc² * 2a_nn/(π - 2a_nn*sqrt(mc²*Emax/ħc^2))
+    v_rho = 814.2
+    R_rho = R₀
+    a_rho = 0.67
+    =#
+
+    # C-22
+    a_nn = -15.0 # [fm]
+    v₀_nn = 2π^2*ħc^2/mc² * 2a_nn/(π - 2a_nn*sqrt(mc²*Emax/ħc^2))
+    v_rho = -v₀_nn 
+    R_rho = R₀
+    a_rho = 0.67
 end
 
 end # module

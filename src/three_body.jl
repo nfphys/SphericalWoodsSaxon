@@ -97,22 +97,22 @@ function calc_BE1_strength(param, spstates, coeff_gs, coeff_excited)
                     1/sqrt(3(j₃+1) * (1+(n₁===n₂)) * (1+(n₃===n₄)))
 
                     if n₂ === n₄ 
-                        ME += temp * (-1)^div(j₁+j₃,2) *
+                        ME += temp * #(-1)^div(j₁+j₃,2) *
                         calc_dipole_matrix_element(param, spstates, n₁, n₃) 
                     end
 
                     if n₁ === n₃ 
-                        ME += temp * #(-1)^div(j₂+j₄,2) *
+                        ME += temp * (-1)^div(j₂+j₄,2) *
                         calc_dipole_matrix_element(param, spstates, n₂, n₄) 
                     end
 
                     if n₂ === n₃ 
-                        ME += temp * (-1)^div(j₁+j₄,2) *
+                        ME += temp * #(-1)^div(j₁+j₄,2) *
                         calc_dipole_matrix_element(param, spstates, n₁, n₄) 
                     end 
 
                     if n₁ === n₄ 
-                        ME += temp * #(-1)^div(j₂+j₃,2) * 
+                        ME += temp * (-1)^div(j₂+j₃,2) * 
                         calc_dipole_matrix_element(param, spstates, n₂, n₃) 
                     end
 
@@ -128,40 +128,41 @@ function calc_BE1_strength(param, spstates, coeff_gs, coeff_excited)
     return BE1 
 end
 
-function test_calc_BE1_strength(param; Γ=0.2, figname="test")
-    @unpack Emax, lmax = param 
+function test_calc_BE1_strength(param; Γ=0.2, Emax_BE1=5.0, howmany=50)
+    @unpack Z, N, Emax, lmax = param 
 
     spstates = calc_single_particle_states(param)
     calc_occ!(spstates, param)
 
     # ground states 
     J_gs = 0 
-    Hmat_3body = make_three_body_Hamiltonian(param, spstates, J_gs) 
-    @time Es_gs, coeffs_gs = eigen(Hmat_3body)
+    @time Hmat_3body = make_three_body_Hamiltonian(param, spstates, J_gs) 
+    @time Es_gs, coeffs_gs, info = eigsolve(Hmat_3body, 1, :SR, eltype(Hmat_3body))
     E_gs = Es_gs[1]
-    coeff_gs = coeffs_gs[:, 1] 
+    coeff_gs = coeffs_gs[1] 
     @show E_gs 
     
     J_excited = 1 
-    Hmat_3body = make_three_body_Hamiltonian(param, spstates, J_excited) 
-    @time Es_excited, coeffs_excited = eigen(Hmat_3body)
+    @time Hmat_3body = make_three_body_Hamiltonian(param, spstates, J_excited) 
+    @time Es_excited, coeffs_excited, info = eigsolve(Hmat_3body, howmany, :SR, eltype(Hmat_3body); krylovdim=200)
     @show Es_excited[1:2]
 
     BE1s = zeros(Float64, length(Es_excited))
     @time for k in 1:length(Es_excited)
-        BE1s[k] = calc_BE1_strength(param, spstates, coeff_gs, coeffs_excited[:,k]) 
+        BE1s[k] = calc_BE1_strength(param, spstates, coeff_gs, coeffs_excited[k]) 
     end
     @show BE1s[1:2]
 
-    Es = range(0, 5.0,  step=0.01) 
+    Es = range(0, Emax_BE1,  step=0.01) 
     fs = zeros(Float64, length(Es)) 
-    for k in 1:length(Es_excited) 
+    @time for k in 1:length(Es_excited) 
         for iE in 1:length(Es)
             E = Es[iE] 
             fs[iE] += 3 * (Γ/π) * 1/((E - Es_excited[k] + E_gs)^2 + Γ^2) * BE1s[k]
         end
     end
-    p = plot(xlabel="E [MeV]", ylabel="B(E1)", title="Emax=$(Emax)[MeV]  lmax=$(lmax)  Γ=$Γ[MeV]", ylim=(0,5))
+    p = plot(xlabel="E [MeV]", ylabel="B(E1)", 
+    title="Z=$Z  N=$N  Emax=$(Emax)MeV  lmax=$(lmax)  Γ=$(Γ)MeV")
     plot!(p, Es, fs; label="total")
     #savefig("./Figure/" * figname * ".png")
     display(p)

@@ -17,7 +17,7 @@ end
 
 
 function make_single_particle_Hamiltonian(param, qnum)
-    @unpack M, Nr, Δr, rs, V₀, V₁, r₀, R₀, a = param
+    @unpack M, Nr, Δr, rs, V₀, V₁, r₀, R₀, a, V_gaus, μ_gaus = param
     @unpack l, j = qnum
     
     # potential
@@ -32,8 +32,7 @@ function make_single_particle_Hamiltonian(param, qnum)
 
     # gaussian potential for s-wave
     if l === 0
-        μ = 0.09 
-        @. Vs += 4.8*0.963*exp(-μ*rs*rs)
+        @. Vs += V_gaus*exp(-μ_gaus*rs*rs)
     end
     
     # centrifugal part
@@ -81,7 +80,7 @@ function calc_single_particle_states(param)
     
     p = sortperm(spEs[1:nstates])
     
-    spstates = SingleParticleStates(nstates, ψs[:,p], spEs[p], qnums[p], occ[p])
+    SingleParticleStates(nstates, ψs[:,p], spEs[p], qnums[p], occ[p])
 end
 
 
@@ -105,11 +104,11 @@ function calc_occ!(spstates, param)
     return
 end
 
-function show_spstates(spstates; Emax=0.0)
+function show_spstates(spstates; Emax_show=0.0)
     @unpack nstates, spEs, qnums, occ = spstates 
     println("")
     for i in 1:nstates
-        if spEs[i] > Emax 
+        if spEs[i] > Emax_show
             break 
         end
         println("i = ", i, ": ")
@@ -118,8 +117,8 @@ function show_spstates(spstates; Emax=0.0)
 end
 
 
-function test_calc_single_particle_states(param; Emax=0.0)
+function test_calc_single_particle_states(param; Emax_show=2.0)
     @time spstates = calc_single_particle_states(param)
     calc_occ!(spstates, param)
-    show_spstates(spstates; Emax=Emax)
+    show_spstates(spstates; Emax_show=Emax_show)
 end

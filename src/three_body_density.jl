@@ -92,7 +92,7 @@ end
 
 
 function test_calc_two_particle_density(param; J=0, M=0, β=0.0, σ₁=1, σ₂=-1, φ=0.0)
-    @unpack Nr, rs, Δr, Emax, lmax, R₀ = param 
+    @unpack Z, N, Nr, rs, Δr, Emax, lmax, R₀ = param 
     @show R₀
 
     spstates = calc_single_particle_states(param)
@@ -113,7 +113,7 @@ function test_calc_two_particle_density(param; J=0, M=0, β=0.0, σ₁=1, σ₂=
     @time for iθ in 1:Nθ, ir in 1:Nr 
         r = rs[ir]
         θ = θs[iθ]
-        ρ₂[ir, iθ] = 2π*r^2 * 4π*r^2 * #sin(θ) *
+        ρ₂[ir, iθ] = 2π*r^2 * 4π*r^2 * sin(θ) *
         calc_two_particle_density(param, spstates, J, M, coeff, ir, θ, φ, σ₁, σ₂)
     end
 
@@ -127,8 +127,8 @@ function test_calc_two_particle_density(param; J=0, M=0, β=0.0, σ₁=1, σ₂=
     plot!(p, rs, ρ₂[:,iθ]; label="ρ₂, θ=$(θs[iθ])")
     display(p)
     
-    p = plot(xlabel="r [fm]", ylabel="θ/π", xlim=(0,20), 
-    title="Emax=$Emax, lmax=$lmax")
+    p = plot(xlabel="r [fm]", ylabel="θ/π", xlim=(0,10), 
+    title="Z=$Z  N=$N  Emax=$(Emax)MeV  lmax=$(lmax)")
     heatmap!(p, rs, θs/π, ρ₂')
     display(p)
 end
