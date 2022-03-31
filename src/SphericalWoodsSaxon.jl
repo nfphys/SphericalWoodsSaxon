@@ -5,6 +5,7 @@ using LinearAlgebra
 using Parameters
 using KrylovKit
 using ProgressMeter
+using Roots
 
 include("./single_particle_states.jl")
 include("./angular_momentum.jl")
@@ -26,11 +27,6 @@ export PhysicalParam
     A::Int64 = Z + N; @assert A === Z + N
 
     M = ħc^2/2mc²*(1 + 1/A)
-
-    # radial mesh
-    Nr::Int64 = 100
-    Δr = 0.2
-    rs::T = range(Δr, Nr*Δr, length=Nr)
     
     # parameters of Woods-Saxon potential
     #= O-24
@@ -55,6 +51,12 @@ export PhysicalParam
     # model space
     Emax = 5 # [MeV]
     lmax::Int64 = 5
+
+    # radial mesh
+    Nr::Int64 = 100
+    Δr = 0.2
+    rs::T = range(Δr, Nr*Δr, length=Nr)
+    ir_matching::Int64 = floor(Int, R₀/Δr)
 
     # parameters of neutron-neutron interaction
     #= O-24 

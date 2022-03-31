@@ -164,4 +164,5 @@ function test_make_three_body_Hamiltonian(param; J=0)
 
     Hmat_3body = make_three_body_Hamiltonian(param, spstates, J)
     @show eigmin(Hmat_3body)
+    return 
 end
