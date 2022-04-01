@@ -53,40 +53,40 @@ end
 
 
 """
-    calc_angular_matrix_element(l, j, m, λ, μ, lp, jp, mp)
+    calc_angular_matrix_element(l₁, j₁, m₁, λ, μ, l₂, j₂, m₂)
 
-l, lp, λ, μ: actual values
-j, m, jp, mp: double their actual values
+l₁, l₂, λ, μ: actual values
+j₁, m₁, j₂, m₂: double their actual values
 """
-function calc_angular_matrix_element(l, j, m, λ, μ, lp, jp, mp)
-    if isodd(l+lp+λ)
+function calc_angular_matrix_element(l₁, j₁, m₁, λ, μ, l₂, j₂, m₂)
+    if isodd(l₁+l₂+λ)
         return 0.0
     end
     
-    M = 1/sqrt(2λ+1) * clebsch(j,m,jp,-mp,2λ,2μ) * 
-        sqrt((j+1)*(jp+1)*(2λ+1)/4π) * wigner3j(j,2λ,jp,1,0,-1)
-        
-    
-    if isodd(div(j+m,2)+1)
-        M *= -1
+    M = clebsch(j₁, m₁, j₂, -m₂, 2λ, 2μ)/sqrt(2λ+1) *
+    sqrt((j₁+1)*(j₂+1)/4π) * clebsch(j₁, 1, j₂, -1, 2λ, 0) 
+
+    if isodd(div(j₂-m₂,2)) 
+        M *= -1 
     end
-    
-    if isodd(div(j+1,2))
-        M *= -1
+
+    if isodd(div(j₁-1,2)+λ)
+        M *= -1 
     end
     
     return M
 end
 
-function calc_reduced_angular_matrix_element(l, j, λ, lp, jp)
-    if isodd(l+lp+λ)
+
+function calc_reduced_angular_matrix_element(l₁, j₁, λ, l₂, j₂)
+    if isodd(l₁+l₂+λ)
         return 0.0
     end
     
-    M = sqrt((j+1)*(jp+1)*(2λ+1)/4π) * wigner3j(j,2λ,jp,1,0,-1)
-    
-    if isodd(div(j+1,2))
-        M *= -1
+    M = sqrt((j₁+1)*(j₂+1)/4π) * clebsch(j₁, 1, j₂, -1, 2λ, 0) 
+
+    if isodd(div(j₁-1,2)+λ)
+        M *= -1 
     end
     
     return M

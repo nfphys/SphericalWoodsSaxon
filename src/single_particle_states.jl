@@ -64,7 +64,7 @@ function integrate_SchEq!(ys, As, param, Vs, E, qnum)
     G₁ = As[1]*ys[1,1]
     for ir in 1:ir_matching
         G₂ = 12ys[ir,1] - 10G₁ - G₀
-        ys[ir+1,1] = G₂/As[ir+1]
+        ys[ir+1,1] = As[ir+1]\G₂
         G₀ = G₁ 
         G₁ = G₂
     end

@@ -21,8 +21,7 @@ function calc_dipole_matrix_element(param, spstates, n₁, n₂)
     end
     ME_rad *= Δr 
 
-    ME_ang = (-1)^div(j₁+1,2) * clebsch(j₂, 1, j₁, -1, 2, 0) * sqrt((j₁+1)*(j₂+1)/4π)
-    #ME_ang = calc_reduced_angular_matrix_element(l₁, j₁, 1, l₂, j₂) 
+    ME_ang = calc_reduced_angular_matrix_element(l₁, j₁, 1, l₂, j₂) 
 
     return -(Z/A) * ME_rad * ME_ang 
 end
@@ -97,22 +96,22 @@ function calc_BE1_strength(param, spstates, coeff_gs, coeff_excited)
                     1/sqrt(3(j₃+1) * (1+(n₁===n₂)) * (1+(n₃===n₄)))
 
                     if n₂ === n₄ 
-                        ME += temp * (-1)^div(j₁+j₃,2) *
+                        ME += temp * #(-1)^div(j₁+j₃,2) *
                         calc_dipole_matrix_element(param, spstates, n₁, n₃) 
                     end
 
                     if n₁ === n₃ 
-                        ME += temp * #(-1)^div(j₂+j₄,2) *
+                        ME += temp * (-1)^div(j₂+j₄,2) *
                         calc_dipole_matrix_element(param, spstates, n₂, n₄) 
                     end
 
                     if n₂ === n₃ 
-                        ME += temp * (-1)^div(j₁+j₄,2) *
+                        ME += temp * #(-1)^div(j₁+j₄,2) *
                         calc_dipole_matrix_element(param, spstates, n₁, n₄) 
                     end 
 
                     if n₁ === n₄ 
-                        ME += temp * #(-1)^div(j₂+j₃,2) * 
+                        ME += temp * (-1)^div(j₂+j₃,2) * 
                         calc_dipole_matrix_element(param, spstates, n₂, n₃) 
                     end
 
@@ -164,7 +163,7 @@ function test_calc_BE1_strength(param; Γ=0.2, Emax_BE1=5.0, howmany=50)
         end
     end
     p = plot(xlabel="E [MeV]", ylabel="B(E1)", 
-    title="Z=$Z  N=$N  Emax=$(Emax)MeV  lmax=$(lmax)  Γ=$(Γ)MeV")
+    title="Z=$Z  N=$N  Emax=$(Emax)MeV  lmax=$(lmax)  Γ=$(Γ)MeV", ylim=(0,5))
     plot!(p, Es, fs; label="total")
     #savefig("./Figure/" * figname * ".png")
     display(p)

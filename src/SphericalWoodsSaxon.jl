@@ -73,6 +73,6 @@ export PhysicalParam
     v_rho = -v₀_nn 
     R_rho = R₀
     a_rho = 0.67
-end
+end 
 
 end # module
