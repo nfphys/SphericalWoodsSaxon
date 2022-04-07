@@ -53,8 +53,8 @@ export PhysicalParam
     lmax::Int64 = 5
 
     # radial mesh
-    Nr::Int64 = 40
-    Δr = 0.5
+    Nr::Int64 = 150
+    Δr = 0.2
     rs::T = range(Δr, Nr*Δr, length=Nr)
     ir_matching::Int64 = floor(Int, R₀/Δr)
 

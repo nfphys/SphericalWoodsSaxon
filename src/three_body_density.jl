@@ -7,9 +7,7 @@ function calc_uncorrelated_2pwf(param, spstates, J, M, n₁, n₂, ir, θ, φ, �
     @unpack Nr, rs, Δr, Emax, lmax = param
     @unpack nstates, ψs, spEs, qnums, occ = spstates 
 
-    #ir = floor(Int, r/Δr)
     @assert 1 ≤ ir ≤ Nr
-    r = rs[ir]
 
     Y = spherical_harmonics
 
@@ -23,23 +21,17 @@ function calc_uncorrelated_2pwf(param, spstates, J, M, n₁, n₂, ir, θ, φ, �
         return 0.0 
     end
 
-    
-    a = 0.5 * (-1)^l₁ * sqrt((j₁+1)/(2l₁+1))
-    b = sqrt(2l₁+1) * clebsch(j₁, 2M-σ₂, j₂, σ₂, 2J, 2M) * 
-    clebsch_ls(l₁, j₁, 2M-σ₂, σ₁) * clebsch_ls(l₂, j₂, σ₂, σ₂) 
-    #@assert a ≈ b
-    
-
     ψ₂ = ψs[ir, n₁]/rs[ir] * ψs[ir, n₂]/rs[ir] *
     clebsch(j₁, 2M-σ₂, j₂, σ₂, 2J, 2M) * 
     clebsch_ls(l₁, j₁, 2M-σ₂, σ₁) * Y(l₁, div(2M-σ₁-σ₂,2), θ, φ) *
     clebsch_ls(l₂, j₂,    σ₂, σ₂) * sqrt((2l₂+1)/4π) 
+
+    return ψ₂
 end
 
 function calc_two_particle_density(param, spstates, J, M, coeff, ir, θ, φ, σ₁, σ₂)
     @unpack Nr, rs, Δr, Emax, lmax, R₀ = param 
     @unpack nstates, ψs, spEs, qnums, occ = spstates 
-    #@show R₀
 
     ψ₂ = 0.0 + 0.0im 
 
@@ -88,6 +80,8 @@ function calc_two_particle_density(param, spstates, J, M, coeff, ir, θ, φ, σ�
     @assert n₁₂ === length(coeff)
 
     ρ₂ = abs2(ψ₂)
+
+    return ρ₂
 end
 
 
@@ -102,9 +96,9 @@ function test_calc_two_particle_density(param; J=0, M=0, β=0.0, σ₁=1, σ₂=
     Hmat_3body = make_three_body_Hamiltonian(param, spstates, J)
 
     @time vals, vecs, info = eigsolve(Hmat_3body, 1, :SR, eltype(Hmat_3body))
+    @show vals
     coeff = vecs[1]
 
-    #r = R₀
     θs = range(0, π, length=100+1)
     Nθ = length(θs)
     φ = 0
@@ -113,14 +107,17 @@ function test_calc_two_particle_density(param; J=0, M=0, β=0.0, σ₁=1, σ₂=
     @time for iθ in 1:Nθ, ir in 1:Nr 
         r = rs[ir]
         θ = θs[iθ]
-        ρ₂[ir, iθ] = 2π*r^2 * 4π*r^2 * sin(θ) *
+        ρ₂[ir, iθ] = 8π^2*r^4 * sin(θ) *
         calc_two_particle_density(param, spstates, J, M, coeff, ir, θ, φ, σ₁, σ₂)
     end
 
     ir = floor(Int, 5/Δr)
-    p = plot(title="Emax=$(Emax)MeV  lmax=$(lmax)", xlabel="φ/π", ylim=(0, 0.02))
+    p = plot(title="Emax=$(Emax)MeV  lmax=$(lmax)", 
+    xlabel="θ/π", ylabel="8π² r⁴ sin(θ) ρ₂ [fm⁻²]", ylim=(0, 0.005))
     plot!(p, θs/π, ρ₂[ir,:]; label="ρ₂, r=$(rs[ir])fm")
     display(p)
+
+    return 
 
     iθ = 1
     p = plot(title="Emax=$(Emax)MeV  lmax=$(lmax)", xlabel="r [fm]")

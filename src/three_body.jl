@@ -127,8 +127,10 @@ function calc_BE1_strength(param, spstates, coeff_gs, coeff_excited)
     return BE1 
 end
 
-function test_calc_BE1_strength(param; Γ=0.2, Emax_BE1=5.0, howmany=50)
-    @unpack Z, N, Emax, lmax = param 
+function test_calc_BE1_strength(param; Γ=0.2, Emax_BE1=5.0, howmany=300, 
+    txtname="")
+    @unpack Z, N, Emax, lmax, rs = param 
+    rmax = rs[end]
 
     spstates = calc_single_particle_states(param)
     calc_occ!(spstates, param)
@@ -144,7 +146,7 @@ function test_calc_BE1_strength(param; Γ=0.2, Emax_BE1=5.0, howmany=50)
     
     J_excited = 1 
     @time Hmat_3body = make_three_body_Hamiltonian(param, spstates, J_excited) 
-    #@time Es_excited, coeffs_excited, info = eigsolve(Hmat_3body, howmany, :SR, eltype(Hmat_3body); krylovdim=200)
+    #@time Es_excited, coeffs_excited, info = eigsolve(Hmat_3body, howmany, :SR, eltype(Hmat_3body); krylovdim=500)
     @time Es_excited, coeffs_excited = eigen(Hmat_3body)
     @show Es_excited[1:2]
 
@@ -162,9 +164,15 @@ function test_calc_BE1_strength(param; Γ=0.2, Emax_BE1=5.0, howmany=50)
             fs[iE] += 3 * (Γ/π) * 1/((E - Es_excited[k] + E_gs)^2 + Γ^2) * BE1s[k]
         end
     end
+
+    file = open("datafiles/BE1_strength_" * txtname * ".txt", "w")
+    for iE in 1:length(Es)
+        println(file, string(Es[iE]) * " " * string(fs[iE]))
+    end
+    close(file)
+
     p = plot(xlabel="E [MeV]", ylabel="B(E1)", 
-    title="Z=$Z  N=$N  Emax=$(Emax)MeV  lmax=$(lmax)  Γ=$(Γ)MeV", ylim=(0,5))
+    title="Emax=$(Emax)MeV  lmax=$(lmax)  rmax=$(rmax)fm  Γ=$(Γ)MeV", ylim=(0,10))
     plot!(p, Es, fs; label="total")
-    #savefig("./Figure/" * figname * ".png")
     display(p)
 end
